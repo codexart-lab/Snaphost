@@ -1,4 +1,4 @@
-#SNAP HOST Image Uploader
+# SNAP HOST Image Uploader
 
 This is a simple image uploader that allows users to upload images to IMGBB using drag-and-drop or file selection.
 
