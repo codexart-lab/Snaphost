@@ -2,21 +2,19 @@
 
 This is a simple image uploader that allows users to upload images to IMGBB using drag-and-drop or file selection.
 
-Features
+# Features
 
 1.Drag & Drop image upload
 
 2.Image preview before upload
 
-3.Upload to IMGBB API
-
-4.Copy uploaded image link easily
+3.Copy uploaded image link easily
 
 
-Live Demo
+# Live Demo
 
 Click here to view
 
-License
+# License
 
 MIT License
