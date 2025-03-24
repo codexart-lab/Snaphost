@@ -4,11 +4,13 @@ This is a simple image uploader that allows users to upload images to IMGBB usin
 
 # Features
 
-1.Drag & Drop image upload
+1.Choose Seever
 
-2.Image preview before upload
+2.Drag & Drop image upload
 
-3.Copy uploaded image link easily
+3.Image preview before upload
+
+4.Copy uploaded image link easily
 
 # My GitHub Pages Website  
 
