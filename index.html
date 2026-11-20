@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SNAP Hosting - Instant Image Hosting</title>
+<meta name="theme-color" content="#04070a">
+<meta name="description" content="Snap Hosting - drag, drop and host images instantly. Get a direct link in seconds.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%3E%3Crect%20width='24'%20height='24'%20rx='6'%20fill='%2339FF14'/%3E%3Cpath%20d='M13%202%204%2014h6l-1%208%209-12h-6l1-8z'%20fill='%23041008'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #04070a;
+    --panel: rgba(13, 20, 16, 0.55);
+    --line: rgba(57, 255, 20, 0.16);
+    --line-soft: rgba(255, 255, 255, 0.08);
+    --line-strong: rgba(57, 255, 20, 0.45);
+    --neon: #39ff14;
+    --neon-soft: #7cff6b;
+    --teal: #00e5a0;
+    --text: #e9f6ec;
+    --muted: #93a89c;
+    --danger: #ff5d6c;
+    --radius: 20px;
+    --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+    --mono: ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  [hidden] { display: none !important; }
+
+  html { scrollbar-color: rgba(57, 255, 20, 0.25) transparent; }
+
+  body {
+    font-family: var(--font-body);
+    color: var(--text);
+    min-height: 100vh;
+    background:
+      radial-gradient(900px 520px at 85% -10%, rgba(57, 255, 20, 0.08), transparent 60%),
+      radial-gradient(700px 460px at -10% 110%, rgba(0, 229, 160, 0.07), transparent 60%),
+      var(--bg);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection { background: var(--neon); color: #041008; }
+
+  button { font-family: inherit; }
+
+  a { color: var(--neon); }
+
+  :focus-visible {
+    outline: 2px solid var(--neon);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+
+  /* ------------------------------ background art ------------------------------ */
+
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(90px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .orb-1 {
+    width: 480px; height: 480px;
+    background: rgba(57, 255, 20, 0.10);
+    top: -120px; right: -80px;
+    animation: float1 16s ease-in-out infinite alternate;
+  }
+  .orb-2 {
+    width: 380px; height: 380px;
+    background: rgba(0, 229, 160, 0.08);
+    bottom: -110px; left: -70px;
+    animation: float2 19s ease-in-out infinite alternate;
+  }
+  .orb-3 {
+    width: 260px; height: 260px;
+    background: rgba(124, 255, 107, 0.07);
+    top: 42%; left: 56%;
+    animation: float3 22s ease-in-out infinite alternate;
+  }
+  @keyframes float1 { to { transform: translate(-60px, 40px) scale(1.08); } }
+  @keyframes float2 { to { transform: translate(50px, -40px) scale(1.12); } }
+  @keyframes float3 { to { transform: translate(-40px, -60px) scale(0.94); } }
+
+  .grid-overlay {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    background-size: 44px 44px;
+    -webkit-mask-image: radial-gradient(ellipse 95% 70% at 50% 0%, #000 30%, transparent 78%);
+    mask-image: radial-gradient(ellipse 95% 70% at 50% 0%, #000 30%, transparent 78%);
+  }
+
+  /* --------------------------------- header --------------------------------- */
+
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding: 14px 22px;
+    background: rgba(4, 8, 6, 0.72);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .brand { display: flex; align-items: center; gap: 13px; }
+
+  .logo {
+    width: 44px; height: 44px;
+    border-radius: 13px;
+    display: grid;
+    place-items: center;
+    color: #041008;
+    background: linear-gradient(135deg, var(--neon), var(--teal));
+    box-shadow: 0 6px 26px rgba(57, 255, 20, 0.35);
+    flex: none;
+  }
+  .logo svg { width: 22px; height: 22px; }
+
+  .title {
+    font-family: var(--font-display);
+    font-size: 1.28rem;
+    letter-spacing: 0.14em;
+    line-height: 1.05;
+  }
+  .title .t-neon {
+    background: linear-gradient(90deg, var(--neon), var(--teal));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .tagline {
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    margin-top: 5px;
+  }
+
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    color: var(--muted);
+    border: 1px solid var(--line-soft);
+    background: rgba(255, 255, 255, 0.04);
+    padding: 7px 13px;
+    border-radius: 999px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--neon);
+    box-shadow: 0 0 8px var(--neon);
+    animation: blink 2.4s ease-in-out infinite;
+    flex: none;
+  }
+  @keyframes blink { 50% { opacity: 0.35; } }
+
+  /* ---------------------------------- layout --------------------------------- */
+
+  main {
+    position: relative;
+    z-index: 1;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 28px 20px 40px;
+    display: grid;
+    gap: 22px;
+  }
+
+  .card {
+    background: var(--panel);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 26px;
+    box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.85);
+  }
+  .upload-card { animation: fadeUp 0.6s 0.05s ease both; }
+  .history-card { animation: fadeUp 0.6s 0.16s ease both; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } }
+
+  .card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .card-head h3 {
+    font-family: var(--font-display);
+    font-size: 1.02rem;
+    letter-spacing: 0.04em;
+  }
+
+  /* --------------------------------- dropzone -------------------------------- */
+
+  .dropzone {
+    position: relative;
+    border: 1.5px dashed var(--line-strong);
+    border-radius: 16px;
+    background: rgba(57, 255, 20, 0.04);
+    padding: 46px 24px 42px;
+    text-align: center;
+    cursor: pointer;
+    transition: background 0.25s ease, border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  .dropzone:hover {
+    background: rgba(57, 255, 20, 0.07);
+    border-color: var(--neon);
+  }
+  .dropzone.dragging {
+    background: rgba(57, 255, 20, 0.12);
+    border-color: var(--neon);
+    border-style: solid;
+    transform: scale(1.015);
+    box-shadow: 0 0 0 1px var(--line-strong), 0 18px 50px -18px rgba(57, 255, 20, 0.45);
+  }
+  .dropzone h2 {
+    font-family: var(--font-display);
+    font-size: 1.12rem;
+    margin: 16px 0 7px;
+  }
+  .dz-sub { color: var(--muted); font-size: 0.9rem; }
+  .dz-sub .linkish { color: var(--neon); text-decoration: underline; text-underline-offset: 3px; }
+  .dz-hint {
+    margin-top: 15px;
+    font-size: 0.76rem;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+  }
+
+  .upload-icon {
+    position: relative;
+    width: 58px; height: 58px;
+    margin: 0 auto;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: #041008;
+    background: linear-gradient(135deg, var(--neon), var(--teal));
+    box-shadow: 0 10px 30px -6px rgba(57, 255, 20, 0.5);
+  }
+  .upload-icon svg { width: 26px; height: 26px; }
+  .upload-icon::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border: 1px solid rgba(57, 255, 20, 0.5);
+    animation: ring 2.4s ease-out infinite;
+  }
+  @keyframes ring {
+    0% { transform: scale(1); opacity: 0.8; }
+    70%, 100% { transform: scale(1.65); opacity: 0; }
+  }
+
+  /* -------------------------------- file panel ------------------------------- */
+
+  .file-panel {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 18px;
+    padding: 14px;
+    border: 1px solid var(--line-soft);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.03);
+  }
+  .file-panel img {
+    width: 84px; height: 84px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    flex: none;
+    background: rgba(0, 0, 0, 0.3);
+  }
+  .file-meta { min-width: 0; flex: 1; display: grid; gap: 3px; }
+  .file-meta strong {
+    font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .muted { color: var(--muted); font-size: 0.82rem; }
+
+  .file-actions { display: flex; gap: 8px; flex: none; }
+
+  .icon-btn {
+    width: 36px; height: 36px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    border: 1px solid var(--line-soft);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--muted);
+    cursor: pointer;
+    transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    text-decoration: none;
+    flex: none;
+  }
+  .icon-btn:hover { color: var(--neon); border-color: var(--line-strong); background: rgba(57, 255, 20, 0.08); }
+  .icon-btn svg { width: 16px; height: 16px; }
+
+  /* --------------------------------- servers --------------------------------- */
+
+  .servers {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 22px 0 16px;
+  }
+  .server {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 14px;
+    border: 1px solid var(--line-soft);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.03);
+    cursor: pointer;
+    color: var(--text);
+    text-align: left;
+    transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  }
+  .server:hover { border-color: rgba(57, 255, 20, 0.3); background: rgba(255, 255, 255, 0.05); }
+  .srv-dot {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: #3a4a41;
+    flex: none;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+  }
+  .srv-text { min-width: 0; display: grid; gap: 2px; flex: 1; }
+  .srv-name { font-weight: 600; font-size: 0.92rem; }
+  .srv-sub { font-size: 0.72rem; color: var(--muted); }
+  .srv-check { width: 16px; height: 16px; color: var(--neon); opacity: 0; transition: opacity 0.2s ease; flex: none; }
+  .server.selected {
+    border-color: var(--line-strong);
+    background: rgba(57, 255, 20, 0.07);
+    box-shadow: 0 0 0 1px rgba(57, 255, 20, 0.2), 0 12px 32px -14px rgba(57, 255, 20, 0.4);
+  }
+  .server.selected .srv-dot { background: var(--neon); box-shadow: 0 0 10px var(--neon); }
+  .server.selected .srv-check { opacity: 1; }
+
+  /* --------------------------------- buttons --------------------------------- */
+
+  .btn-primary {
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 15px 20px;
+    border: none;
+    border-radius: 14px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #052008;
+    cursor: pointer;
+    background: linear-gradient(135deg, var(--neon), var(--teal));
+    box-shadow: 0 10px 32px -8px rgba(57, 255, 20, 0.45);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  }
+  .btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    filter: brightness(1.06);
+    box-shadow: 0 14px 40px -8px rgba(57, 255, 20, 0.55);
+  }
+  .btn-primary:active:not(:disabled) { transform: scale(0.985); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+  .btn-primary svg { width: 18px; height: 18px; }
+
+  .btn-ghost {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 8px 10px;
+    border-radius: 10px;
+    transition: color 0.2s ease;
+  }
+  .btn-ghost:hover { color: var(--text); }
+  .btn-ghost.small { font-size: 0.8rem; padding: 6px 10px; }
+
+  /* --------------------------------- progress -------------------------------- */
+
+  .progress-wrap { margin-top: 18px; }
+  .progress-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 9px;
+  }
+  #progressPct { color: var(--neon); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  .progress {
+    height: 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.07);
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--neon), var(--teal));
+    position: relative;
+    transition: width 0.15s ease;
+  }
+  .progress-fill::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-image: linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.22) 25%, transparent 25% 50%,
+      rgba(255, 255, 255, 0.22) 50%, transparent 75% 100%
+    );
+    background-size: 18px 18px;
+    animation: slide 0.8s linear infinite;
+  }
+  @keyframes slide { to { background-position: 18px 0; } }
+  .progress-wrap .btn-ghost { margin-top: 10px; }
+
+  /* ---------------------------------- result --------------------------------- */
+
+  .result {
+    margin-top: 22px;
+    border: 1px solid rgba(57, 255, 20, 0.3);
+    background: rgba(57, 255, 20, 0.05);
+    border-radius: 16px;
+    padding: 20px;
+    animation: fadeUp 0.4s ease both;
+  }
+  .result-head { display: flex; align-items: center; gap: 13px; }
+  .check {
+    width: 42px; height: 42px;
+    flex: none;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    color: var(--neon);
+    background: rgba(57, 255, 20, 0.12);
+    border: 1px solid var(--line-strong);
+    animation: pop 0.5s cubic-bezier(0.21, 1.4, 0.55, 1) both;
+  }
+  .check svg { width: 20px; height: 20px; }
+  @keyframes pop {
+    0% { transform: scale(0.4); opacity: 0; }
+    60% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .result-head h3 { font-family: var(--font-display); font-size: 1.05rem; }
+  .result-head p { margin-top: 3px; }
+
+  .result-body { display: flex; gap: 16px; margin-top: 18px; }
+  .result-body > img {
+    width: 116px; height: 116px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    flex: none;
+    background: rgba(0, 0, 0, 0.3);
+  }
+  .result-main { flex: 1; min-width: 0; display: grid; gap: 12px; align-content: start; }
+
+  .link-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid var(--line-soft);
+    border-radius: 12px;
+    padding: 9px 10px 9px 14px;
+    min-width: 0;
+  }
+  .link-box code {
+    flex: 1;
+    min-width: 0;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--neon-soft);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(57, 255, 20, 0.12);
+    border: 1px solid rgba(57, 255, 20, 0.35);
+    color: var(--neon);
+    padding: 8px 13px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.15s ease;
+    flex: none;
+  }
+  .copy-btn:hover { background: rgba(57, 255, 20, 0.22); }
+  .copy-btn:active { transform: scale(0.96); }
+  .copy-btn svg { width: 14px; height: 14px; }
+  .copy-btn.copied { background: var(--neon); color: #041008; border-color: var(--neon); }
+
+  .result-btns { display: flex; gap: 9px; flex-wrap: wrap; }
+  .btn-secondary, .btn-danger {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+    background: transparent;
+  }
+  .btn-secondary { border: 1px solid var(--line-strong); color: var(--neon); }
+  .btn-secondary:hover { background: rgba(57, 255, 20, 0.1); }
+  .btn-danger { border: 1px solid rgba(255, 93, 108, 0.4); color: var(--danger); }
+  .btn-danger:hover { background: rgba(255, 93, 108, 0.1); }
+  .btn-secondary svg, .btn-danger svg { width: 15px; height: 15px; }
+
+  /* --------------------------------- history --------------------------------- */
+
+  .history-list { list-style: none; display: grid; gap: 10px; }
+  .history-item {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 11px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.02);
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+  .history-item:hover { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.12); }
+  .history-item img {
+    width: 46px; height: 46px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    flex: none;
+    background: rgba(0, 0, 0, 0.3);
+  }
+  .h-meta { min-width: 0; flex: 1; display: grid; gap: 3px; }
+  .h-meta strong {
+    font-size: 0.88rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .h-actions { display: flex; gap: 7px; flex: none; }
+
+  /* ---------------------------------- footer --------------------------------- */
+
+  .site-footer {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 26px 20px 34px;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  .site-footer strong { color: var(--text); }
+  .site-footer a { color: var(--neon); text-decoration: none; }
+  .site-footer a:hover { text-decoration: underline; }
+
+  /* ---------------------------------- toasts --------------------------------- */
+
+  .toasts {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 60;
+    display: grid;
+    gap: 8px;
+    width: min(92vw, 440px);
+  }
+  .toast {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    background: rgba(10, 16, 13, 0.93);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--line-soft);
+    border-left: 3px solid var(--teal);
+    border-radius: 12px;
+    padding: 12px 15px;
+    font-size: 0.88rem;
+    box-shadow: 0 14px 40px -12px rgba(0, 0, 0, 0.8);
+    animation: toastIn 0.28s cubic-bezier(0.21, 1.02, 0.55, 1) both;
+  }
+  .toast.success { border-left-color: var(--neon); }
+  .toast.success .t-icon { color: var(--neon); }
+  .toast.error { border-left-color: var(--danger); }
+  .toast.error .t-icon { color: var(--danger); }
+  .toast.info .t-icon { color: var(--teal); }
+  .t-icon { width: 20px; height: 20px; display: grid; place-items: center; flex: none; }
+  .t-icon svg { width: 16px; height: 16px; }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(14px) scale(0.97); } }
+  .toast.out { opacity: 0; transform: translateY(8px); transition: opacity 0.3s ease, transform 0.3s ease; }
+
+  /* --------------------------------- misc fx --------------------------------- */
+
+  #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 50; }
+
+  .shake { animation: shake 0.5s ease both; }
+  @keyframes shake {
+    10%, 90% { transform: translateX(-1px); }
+    20%, 80% { transform: translateX(2px); }
+    30%, 50%, 70% { transform: translateX(-4px); }
+    40%, 60% { transform: translateX(4px); }
+  }
+
+  /* -------------------------------- responsive ------------------------------- */
+
+  @media (max-width: 620px) {
+    .servers { grid-template-columns: 1fr; }
+    .result-body { flex-direction: column; }
+    .result-body > img { width: 100%; height: 170px; }
+    .card { padding: 20px; }
+    .dropzone { padding: 36px 16px 34px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+    .orb, .upload-icon::after, .progress-fill::after { animation: none !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="grid-overlay"></div>
+
+  <header class="site-header">
+    <div class="brand">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="title">SNAP <span class="t-neon">HOSTING</span></h1>
+        <p class="tagline">The Future of Image Hosting</p>
+      </div>
+    </div>
+    <div class="chips">
+      <span class="chip"><span class="dot" aria-hidden="true"></span> 3 servers ready</span>
+      <span class="chip" id="statUploads">0 uploads</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="card upload-card" aria-label="Image upload">
+      <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Choose or drop an image">
+        <input type="file" id="fileInput" accept="image/*" hidden>
+        <div class="upload-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+          </svg>
+        </div>
+        <h2>Drag &amp; drop your image</h2>
+        <p class="dz-sub">or <span class="linkish">browse files</span> &middot; paste from clipboard with Ctrl&nbsp;+&nbsp;V</p>
+        <p class="dz-hint">JPG &middot; PNG &middot; GIF &middot; WebP &middot; BMP &middot; up to 32&nbsp;MB</p>
+      </div>
+
+      <div class="file-panel" id="filePanel" hidden>
+        <img id="preview" alt="Selected image preview">
+        <div class="file-meta">
+          <strong id="fileName"></strong>
+          <span class="muted" id="fileInfo"></span>
+          <span class="muted" id="fileDims"></span>
+        </div>
+        <div class="file-actions">
+          <button class="icon-btn" id="replaceFile" type="button" title="Replace image" aria-label="Replace image">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/>
+            </svg>
+          </button>
+          <button class="icon-btn" id="removeFile" type="button" title="Remove image" aria-label="Remove image">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 6 6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="servers" id="serverRow" role="radiogroup" aria-label="Choose upload server"></div>
+
+      <button class="btn-primary" id="uploadBtn" type="button" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+        </svg>
+        <span>Upload Image</span>
+      </button>
+
+      <div class="progress-wrap" id="progressWrap" hidden>
+        <div class="progress-head">
+          <span id="progressLabel">Uploading...</span>
+          <span id="progressPct">0%</span>
+        </div>
+        <div class="progress"><div class="progress-fill" id="progressFill"></div></div>
+        <button class="btn-ghost" id="cancelBtn" type="button">Cancel upload</button>
+      </div>
+
+      <div class="result" id="resultBox" hidden>
+        <div class="result-head">
+          <div class="check" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 6 9 17l-5-5"/>
+            </svg>
+          </div>
+          <div>
+            <h3>Uploaded successfully</h3>
+            <p class="muted" id="resultMeta"></p>
+          </div>
+        </div>
+        <div class="result-body">
+          <img id="resultThumb" alt="Uploaded image">
+          <div class="result-main">
+            <div class="link-box">
+              <code id="imageLink"></code>
+              <button class="copy-btn" id="copyBtn" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+                <span>Copy</span>
+              </button>
+            </div>
+            <div class="result-btns">
+              <a class="btn-secondary" id="openBtn" href="#" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/>
+                </svg>
+                Open image
+              </a>
+              <a class="btn-danger" id="deleteBtn" href="#" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                </svg>
+                Delete
+              </a>
+              <button class="btn-ghost" id="againBtn" type="button">Upload another</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card history-card" id="historyCard" hidden aria-label="Recent uploads">
+      <div class="card-head">
+        <h3>Recent uploads</h3>
+        <button class="btn-ghost small" id="clearHistory" type="button">Clear all</button>
+      </div>
+      <ul class="history-list" id="historyList"></ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    By <strong>Tanjiro</strong> &middot; Powered by <a href="https://imgbb.com" target="_blank" rel="noopener">ImgBB</a> API
+  </footer>
+
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+  <canvas id="confetti"></canvas>
+
+<script>
+  /* ======================================================================
+     CONFIG - paste your three ImgBB API keys here.
+     (They are the same keys your original page used for Server 1 / 2 / 3.)
+     NOTE: this is a static page, so anyone who opens the source can read
+     these keys. For a public site, host the upload behind a small server
+     proxy (or use the SnapLink Telegram bot, which keeps keys in secrets).
+     ====================================================================== */
+  const SERVERS = [
+    { name: 'Server 1', key: 'PASTE_IMGBB_KEY_1_HERE' },
+    { name: 'Server 2', key: 'PASTE_IMGBB_KEY_2_HERE' },
+    { name: 'Server 3', key: 'PASTE_IMGBB_KEY_3_HERE' },
+  ];
+
+  const MAX_BYTES = 32 * 1024 * 1024; // ImgBB limit
+  const HISTORY_KEY = 'snap_history_v1';
+  const HISTORY_MAX = 12;
+
+  const ICONS = {
+    copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
+    external: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg>',
+    trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+    check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+    alert: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>',
+    info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>',
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const dropzone = $('dropzone'), fileInput = $('fileInput'), filePanel = $('filePanel');
+  const preview = $('preview'), fileName = $('fileName'), fileInfo = $('fileInfo'), fileDims = $('fileDims');
+  const serverRow = $('serverRow'), uploadBtn = $('uploadBtn');
+  const progressWrap = $('progressWrap'), progressLabel = $('progressLabel'), progressPct = $('progressPct'), progressFill = $('progressFill');
+  const cancelBtn = $('cancelBtn'), resultBox = $('resultBox'), resultMeta = $('resultMeta'), resultThumb = $('resultThumb');
+  const imageLink = $('imageLink'), copyBtn = $('copyBtn'), openBtn = $('openBtn'), deleteBtn = $('deleteBtn'), againBtn = $('againBtn');
+  const historyCard = $('historyCard'), historyList = $('historyList'), clearHistoryBtn = $('clearHistory');
+  const toasts = $('toasts'), statUploads = $('statUploads');
+
+  const state = { file: null, previewUrl: null, selected: null, uploading: false, xhr: null };
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* --------------------------------- toasts --------------------------------- */
+
+  function toast(message, type = 'info') {
+    const el = document.createElement('div');
+    el.className = 'toast ' + type;
+    const icon = document.createElement('span');
+    icon.className = 't-icon';
+    icon.innerHTML = type === 'success' ? ICONS.check : type === 'error' ? ICONS.alert : ICONS.info;
+    const text = document.createElement('span');
+    text.textContent = message;
+    el.append(icon, text);
+    toasts.appendChild(el);
+    while (toasts.children.length > 3) toasts.firstElementChild.remove();
+    setTimeout(() => {
+      el.classList.add('out');
+      setTimeout(() => el.remove(), 320);
+    }, 3400);
+  }
+
+  /* --------------------------------- servers -------------------------------- */
+
+  function renderServers() {
+    SERVERS.forEach((server, i) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'server';
+      btn.setAttribute('role', 'radio');
+      btn.setAttribute('aria-checked', 'false');
+
+      const dot = document.createElement('span');
+      dot.className = 'srv-dot';
+
+      const wrap = document.createElement('span');
+      wrap.className = 'srv-text';
+      const name = document.createElement('span');
+      name.className = 'srv-name';
+      name.textContent = server.name;
+      const sub = document.createElement('span');
+      sub.className = 'srv-sub';
+      sub.textContent = 'ImgBB API';
+      wrap.append(name, sub);
+
+      const check = document.createElement('span');
+      check.className = 'srv-check';
+      check.innerHTML = ICONS.check;
+
+      btn.append(dot, wrap, check);
+      btn.addEventListener('click', () => selectServer(i));
+      serverRow.appendChild(btn);
+    });
+  }
+
+  function selectServer(i) {
+    state.selected = i;
+    [...serverRow.children].forEach((el, idx) => {
+      el.classList.toggle('selected', idx === i);
+      el.setAttribute('aria-checked', idx === i ? 'true' : 'false');
+    });
+  }
+
+  /* ------------------------------ file selection ----------------------------- */
+
+  function setFile(file) {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast('That file is not an image (JPG, PNG, GIF, WebP...).', 'error');
+      return;
+    }
+    if (file.size > MAX_BYTES) {
+      toast('Image is ' + humanSize(file.size) + ' - ImgBB accepts up to 32 MB.', 'error');
+      return;
+    }
+    if (state.previewUrl) URL.revokeObjectURL(state.previewUrl);
+    state.file = file;
+    state.previewUrl = URL.createObjectURL(file);
+
+    preview.onload = () => {
+      fileDims.textContent = preview.naturalWidth + ' x ' + preview.naturalHeight + ' px';
+    };
+    preview.src = state.previewUrl;
+    fileName.textContent = file.name || 'image';
+    fileInfo.textContent = (file.type.split('/')[1] || 'image').toUpperCase() + ' - ' + humanSize(file.size);
+    fileDims.textContent = 'Reading dimensions...';
+
+    filePanel.hidden = false;
+    dropzone.hidden = true;
+    resultBox.hidden = true;
+    progressWrap.hidden = true;
+    uploadBtn.hidden = false;
+    uploadBtn.disabled = false;
+  }
+
+  function clearFile() {
+    if (state.previewUrl) URL.revokeObjectURL(state.previewUrl);
+    state.file = null;
+    state.previewUrl = null;
+    preview.removeAttribute('src');
+    filePanel.hidden = true;
+    dropzone.hidden = false;
+    progressWrap.hidden = true;
+    resultBox.hidden = true;
+    uploadBtn.hidden = false;
+    uploadBtn.disabled = true;
+  }
+
+  /* --------------------------------- upload ---------------------------------- */
+
+  function upload() {
+    if (state.uploading || !state.file) return;
+
+    if (state.selected == null) {
+      serverRow.classList.add('shake');
+      setTimeout(() => serverRow.classList.remove('shake'), 550);
+      toast('Select a server first.', 'error');
+      return;
+    }
+    const server = SERVERS[state.selected];
+    if (!server.key || server.key.startsWith('PASTE_')) {
+      toast('Add your ImgBB API key for ' + server.name + ' - open index.html and fill the SERVERS config at the top of the script.', 'error');
+      return;
+    }
+
+    const form = new FormData();
+    form.append('image', state.file);
+
+    const xhr = new XMLHttpRequest();
+    state.xhr = xhr;
+    state.uploading = true;
+
+    uploadBtn.hidden = true;
+    progressWrap.hidden = false;
+    progressLabel.textContent = 'Uploading via ' + server.name + '...';
+    setProgress(0);
+
+    xhr.upload.addEventListener('progress', (e) => {
+      if (e.lengthComputable) setProgress(e.loaded / e.total);
+    });
+
+    xhr.addEventListener('load', () => {
+      state.uploading = false;
+      let res = null;
+      try { res = JSON.parse(xhr.responseText); } catch { /* ignore */ }
+      if (xhr.status >= 200 && xhr.status < 300 && res && res.success) {
+        showResult(res.data, server);
+      } else {
+        failUpload((res && res.error && res.error.message) || 'Upload failed (HTTP ' + xhr.status + ').');
+      }
+    });
+
+    xhr.addEventListener('error', () => { state.uploading = false; failUpload('Network error while uploading. Check your connection.'); });
+    xhr.addEventListener('abort', () => {
+      state.uploading = false;
+      progressWrap.hidden = true;
+      uploadBtn.hidden = false;
+      uploadBtn.disabled = false;
+      toast('Upload cancelled.', 'info');
+    });
+
+    xhr.open('POST', 'https://api.imgbb.com/1/upload?key=' + encodeURIComponent(server.key));
+    xhr.send(form);
+  }
+
+  function setProgress(fraction) {
+    const pct = Math.min(100, Math.round(fraction * 100));
+    progressFill.style.width = pct + '%';
+    progressPct.textContent = pct + '%';
+  }
+
+  function failUpload(message) {
+    progressWrap.hidden = true;
+    uploadBtn.hidden = false;
+    uploadBtn.disabled = false;
+    toast(message, 'error');
+  }
+
+  function showResult(data, server) {
+    const url = data.url || (data.display_url) || '';
+    const size = Number(data.size) || (state.file && state.file.size) || 0;
+
+    progressWrap.hidden = true;
+    uploadBtn.hidden = true;
+    filePanel.hidden = true;
+    dropzone.hidden = true;
+    resultBox.hidden = false;
+
+    resultMeta.textContent = server.name + ' - ' + humanSize(size) +
+      (data.width && data.height ? ' - ' + data.width + ' x ' + data.height + ' px' : '');
+    imageLink.textContent = url;
+    openBtn.href = url;
+    if (data.delete_url) {
+      deleteBtn.href = data.delete_url;
+      deleteBtn.hidden = false;
+    } else {
+      deleteBtn.hidden = true;
+    }
+    resultThumb.src = (data.thumb && data.thumb.url) || url;
+
+    addToHistory({
+      url: url,
+      deleteUrl: data.delete_url || '',
+      thumb: (data.thumb && data.thumb.url) || url,
+      name: (state.file && state.file.name) || 'image',
+      size: size,
+      server: server.name,
+      ts: Date.now(),
+    });
+
+    toast('Image uploaded successfully.', 'success');
+    confettiBurst();
+  }
+
+  /* --------------------------------- clipboard ------------------------------- */
+
+  async function copyText(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch { /* ignore */ }
+      ta.remove();
+      return ok;
+    }
+  }
+
+  copyBtn.addEventListener('click', async () => {
+    const ok = await copyText(imageLink.textContent);
+    if (ok) {
+      copyBtn.classList.add('copied');
+      copyBtn.innerHTML = ICONS.check + '<span>Copied</span>';
+      toast('Link copied to clipboard.', 'success');
+      setTimeout(() => {
+        copyBtn.classList.remove('copied');
+        copyBtn.innerHTML = ICONS.copy + '<span>Copy</span>';
+      }, 1600);
+    } else {
+      toast('Could not copy the link. Select it manually.', 'error');
+    }
+  });
+
+  /* --------------------------------- history --------------------------------- */
+
+  function loadHistory() {
+    try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; }
+    catch { return []; }
+  }
+
+  function addToHistory(item) {
+    const items = loadHistory();
+    items.unshift(item);
+    if (items.length > HISTORY_MAX) items.length = HISTORY_MAX;
+    try { localStorage.setItem(HISTORY_KEY, JSON.stringify(items)); } catch { /* ignore */ }
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const items = loadHistory();
+    historyCard.hidden = items.length === 0;
+    historyList.textContent = '';
+
+    items.forEach((item) => {
+      const li = document.createElement('li');
+      li.className = 'history-item';
+
+      const img = document.createElement('img');
+      img.alt = '';
+      img.loading = 'lazy';
+      img.src = item.thumb || item.url;
+      img.addEventListener('error', () => img.remove());
+
+      const meta = document.createElement('div');
+      meta.className = 'h-meta';
+      const name = document.createElement('strong');
+      name.textContent = item.name || 'image';
+      const sub = document.createElement('span');
+      sub.className = 'muted';
+      sub.textContent = (item.server ? item.server + ' - ' : '') + humanSize(item.size) +
+        (item.ts ? ' - ' + new Date(item.ts).toLocaleString() : '');
+      meta.append(name, sub);
+
+      const actions = document.createElement('div');
+      actions.className = 'h-actions';
+
+      const copyB = document.createElement('button');
+      copyB.type = 'button';
+      copyB.className = 'icon-btn';
+      copyB.title = 'Copy link';
+      copyB.setAttribute('aria-label', 'Copy link');
+      copyB.innerHTML = ICONS.copy;
+      copyB.addEventListener('click', async () => {
+        const ok = await copyText(item.url);
+        toast(ok ? 'Link copied to clipboard.' : 'Could not copy the link.', ok ? 'success' : 'error');
+      });
+
+      const openA = document.createElement('a');
+      openA.className = 'icon-btn';
+      openA.href = item.url;
+      openA.target = '_blank';
+      openA.rel = 'noopener';
+      openA.title = 'Open image';
+      openA.setAttribute('aria-label', 'Open image');
+      openA.innerHTML = ICONS.external;
+
+      actions.append(copyB, openA);
+
+      if (item.deleteUrl) {
+        const delA = document.createElement('a');
+        delA.className = 'icon-btn';
+        delA.href = item.deleteUrl;
+        delA.target = '_blank';
+        delA.rel = 'noopener';
+        delA.title = 'Open ImgBB delete page';
+        delA.setAttribute('aria-label', 'Open ImgBB delete page');
+        delA.innerHTML = ICONS.trash;
+        actions.appendChild(delA);
+      }
+
+      li.append(img, meta, actions);
+      historyList.appendChild(li);
+    });
+
+    statUploads.textContent = items.length + ' upload' + (items.length === 1 ? '' : 's');
+  }
+
+  clearHistoryBtn.addEventListener('click', () => {
+    try { localStorage.removeItem(HISTORY_KEY); } catch { /* ignore */ }
+    renderHistory();
+    toast('Upload history cleared.', 'info');
+  });
+
+  /* --------------------------------- confetti -------------------------------- */
+
+  function confettiBurst() {
+    if (reducedMotion) return;
+    const canvas = $('confetti');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const colors = ['#39ff14', '#7cff6b', '#00e5a0', '#b6ffc9', '#ffffff'];
+    const parts = Array.from({ length: 90 }, () => ({
+      x: canvas.width / 2 + (Math.random() - 0.5) * 180,
+      y: canvas.height / 2 - 90,
+      vx: (Math.random() - 0.5) * 11,
+      vy: -(Math.random() * 11 + 5),
+      w: 5 + Math.random() * 5,
+      h: 8 + Math.random() * 6,
+      rot: Math.random() * Math.PI,
+      vr: (Math.random() - 0.5) * 0.3,
+      color: colors[(Math.random() * colors.length) | 0],
+      life: 70 + Math.random() * 40,
+    }));
+
+    (function tick() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      let alive = false;
+      for (const p of parts) {
+        if (p.life <= 0) continue;
+        alive = true;
+        p.vy += 0.32;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rot += p.vr;
+        p.life--;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.globalAlpha = Math.max(0, Math.min(1, p.life / 40));
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        ctx.restore();
+      }
+      if (alive) requestAnimationFrame(tick);
+      else ctx.clearRect(0, 0, canvas.width, canvas.height);
+    })();
+  }
+
+  /* ---------------------------------- events --------------------------------- */
+
+  dropzone.addEventListener('click', () => fileInput.click());
+  dropzone.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      fileInput.click();
+    }
+  });
+
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files && fileInput.files[0]) setFile(fileInput.files[0]);
+    fileInput.value = '';
+  });
+
+  let dragDepth = 0;
+  ['dragover', 'drop'].forEach((ev) => window.addEventListener(ev, (e) => e.preventDefault()));
+  window.addEventListener('drop', (e) => {
+    dragDepth = 0;
+    dropzone.classList.remove('dragging');
+    const file = e.dataTransfer && [...e.dataTransfer.files].find((f) => f.type.startsWith('image/'));
+    if (file) setFile(file);
+  });
+  dropzone.addEventListener('dragenter', () => { dragDepth++; dropzone.classList.add('dragging'); });
+  dropzone.addEventListener('dragleave', () => { dragDepth--; if (dragDepth <= 0) dropzone.classList.remove('dragging'); });
+  window.addEventListener('dragend', () => { dragDepth = 0; dropzone.classList.remove('dragging'); });
+
+  document.addEventListener('paste', (e) => {
+    const file = e.clipboardData && [...e.clipboardData.files].find((f) => f.type.startsWith('image/'));
+    if (file) {
+      setFile(file);
+      toast('Image pasted from clipboard.', 'info');
+    }
+  });
+
+  $('replaceFile').addEventListener('click', () => fileInput.click());
+  $('removeFile').addEventListener('click', clearFile);
+  uploadBtn.addEventListener('click', upload);
+  cancelBtn.addEventListener('click', () => { if (state.xhr) state.xhr.abort(); });
+  againBtn.addEventListener('click', clearFile);
+
+  /* ----------------------------------- init ----------------------------------- */
+
+  function humanSize(bytes) {
+    const n = Number(bytes);
+    if (!n || n <= 0) return 'unknown size';
+    if (n < 1024) return n + ' B';
+    if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
+    return (n / (1024 * 1024)).toFixed(2) + ' MB';
+  }
+
+  renderServers();
+  renderHistory();
+</script>
+</body>
+</html>
